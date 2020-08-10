@@ -1,0 +1,21 @@
+version: "3"
+services: 
+    postgresql:
+        image: "postgres"
+        container_name: "webshop-db"
+        env_file: 
+            - database.env
+        ports: 
+            - "3309:3306"
+        volumes: 
+            - data:/var/lib/postgresql/data
+
+volumes: 
+    data:
+
+# To run container
+# 1. docker-compose up -d
+# 2. docker-compose run postgresql bash
+# 3. psql --host=postgresql --username=kapten --dbname=webshop-db
+# 4. enter password specified in database.env
+# 5. Shut down container with "docker-compse down"

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Webshop.Database": {
+      "commandName": "Project",
+      "commandLineArgs": ""
+    }
+  }
+}

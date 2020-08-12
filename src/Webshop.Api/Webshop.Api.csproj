@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Webshop.Infrastructure\Webshop.Infrastructure.csproj" />
     <ProjectReference Include="..\Webshop.UI\Webshop.UI.csproj" />
   </ItemGroup>
 

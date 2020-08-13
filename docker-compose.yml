@@ -1,0 +1,25 @@
+version: "3"
+services: 
+    postgresql:
+        image: "postgres"
+        container_name: "webshopdb"
+        env_file: 
+            - database.env
+        ports: 
+            - "5432:5432"
+        volumes: 
+            - data:/var/lib/postgresql/data
+
+volumes: 
+    data:
+
+# To run container
+# 1. docker-compose up -d
+# 2. docker-compose run postgresql bash
+# 3. psql --host=webshopdb --username=webshop --dbname=webshopdb
+# 4. enter password specified in database.env
+# 5. Shut down container with "docker-compse down"
+        # If you want do remove assosiated volume run: docker-compose down -v
+
+# Connectionstring with current container set up: 
+# "User ID=webshop;Password=webshop;Server=192.168.99.100;Port=5432;Database=webshopdb;"

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Webshop.Core;
 using Webshop.Infrastructure.Data;
 
 namespace Webshop.Infrastructure
@@ -11,7 +10,6 @@ namespace Webshop.Infrastructure
 	{
 		public static void RegisterInfrastructureServices(this IServiceCollection serviceCollection)
 		{
-			serviceCollection.AddTransient<IUnitOfWork, UnitOfWork>();
 		}
 	}
 }

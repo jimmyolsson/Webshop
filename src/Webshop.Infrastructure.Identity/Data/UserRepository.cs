@@ -1,18 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Webshop.Infrastructure.Configuration;
-using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
 {
-	internal class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> : BaseRepository,
+	public class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
 		IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
 		where TKey : IEquatable<TKey>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
@@ -22,9 +18,7 @@ namespace Webshop.Infrastructure.Data
 		where TUserLogin : ApplicationIdentityUserLogin<TKey>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 	{
-		internal UserRepository(IOptions<DatabaseOptions> options,
-			ILogger<UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
-			: base(options, logger)
+		public UserRepository()
 		{
 		}
 

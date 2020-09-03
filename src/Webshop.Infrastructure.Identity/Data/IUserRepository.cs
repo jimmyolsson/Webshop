@@ -5,11 +5,11 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Webshop.Infrastructure.Security.Identity.Entities;
+using Webshop.Infrastructure.Identity.Entities;
 
-namespace Webshop.Infrastructure.Data
+namespace Webshop.Infrastructure.Identity.Data
 {
-	internal interface IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
+	public interface IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
 		where TKey : IEquatable<TKey>
 		where TUserRole : ApplicationIdentityUserRole<TKey>

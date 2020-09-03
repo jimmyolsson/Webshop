@@ -39,7 +39,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 		private readonly IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> _userRepository;
 		private readonly ILogger<UserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> _logger;
 
-		internal UserStore(IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> userRepository,
+		public UserStore(IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> userRepository,
 			ILogger<UserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
 		{
 			_userRepository = userRepository;

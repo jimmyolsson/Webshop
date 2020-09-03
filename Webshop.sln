@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webshop.Unit", "tests\Websh
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{6F32321C-E297-4C73-B9EA-2B28F28A98CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webshop.Database", "Webshop.Database\Webshop.Database.csproj", "{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webshop.Database", "Webshop.Database\Webshop.Database.csproj", "{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

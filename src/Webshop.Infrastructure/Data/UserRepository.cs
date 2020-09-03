@@ -12,7 +12,7 @@ using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
 {
-	internal class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> : BaseRepository,
+	internal class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
 		IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
 		where TKey : IEquatable<TKey>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
@@ -22,10 +22,11 @@ namespace Webshop.Infrastructure.Data
 		where TUserLogin : ApplicationIdentityUserLogin<TKey>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 	{
-		internal UserRepository(IOptions<DatabaseOptions> options,
-			ILogger<UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
-			: base(options, logger)
+		private readonly IDataConnection _dataConnection;
+
+		internal UserRepository(IDataConnection dataConnection)
 		{
+			_dataConnection = dataConnection;
 		}
 
 		public Task<bool> AddToRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)

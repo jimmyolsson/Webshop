@@ -2,31 +2,26 @@
 using Microsoft.Extensions.Options;
 using Npgsql;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Webshop.Infrastructure.Configuration;
-using Webshop.Infrastructure.Helpers;
 
 namespace Webshop.Infrastructure.Data
 {
-	public class BaseRepository : IBaseRepository
-	{
+	public class DataConnection : IDataConnection
+    {
 		private readonly IOptions<DatabaseOptions> _options;
 		private readonly ILogger _logger;
 
-		public BaseRepository(IOptions<DatabaseOptions> options, ILogger logger)
+		public DataConnection(IOptions<DatabaseOptions> options, ILogger logger)
 		{
-			Guard.ArgumentNotNullOrWhiteSpace(options.Value.ConnectionString);
-
 			_options = options;
 			_logger = logger;
 		}
 
-		public async void Execute(Func<NpgsqlConnection, Task> query, CancellationToken cancellationToken)
+		public ILogger Logger { get; }
+
+		public async Task Execute(Func<NpgsqlConnection, Task> query, CancellationToken cancellationToken)
 		{
 			try
 			{
@@ -36,7 +31,7 @@ namespace Webshop.Infrastructure.Data
 					await query.Invoke(conn);
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				_logger.LogError(e, e.Message);
 				throw;
@@ -53,7 +48,7 @@ namespace Webshop.Infrastructure.Data
 					return await query.Invoke(conn);
 				}
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				_logger.LogError(e, e.Message);
 				throw;

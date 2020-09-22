@@ -26,10 +26,14 @@ namespace Webshop.Infrastructure.Data
 		where TUserLogin : ApplicationIdentityUserLogin<TKey>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 	{
-		internal UserRepository(IOptions<DatabaseOptions> options,
-			ILogger<UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
-			: base(options, logger)
+		private RoleRepository<TRole, TKey, TUserRole, TRoleClaim> _roleRepository;
+		private IDataConnection _dataConnection;
+
+		internal UserRepository(RoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepository,
+			IDataConnection dataConnection)
 		{
+			_roleRepository = roleRepository;
+			_dataConnection = dataConnection;
 		}
 
 		public Task<IEnumerable<TUser>> GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
@@ -40,7 +44,7 @@ namespace Webshop.Infrastructure.Data
 			if (role == null)
 				return false;
 
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.QueryFirstOrDefaultAsync<TUserRole>(
 					"INSERT INTO IdentityUserRoles VALUES(@UserId, @RoleId)",
@@ -52,7 +56,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<TUser> GetByEmailAsync(string email, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
@@ -74,7 +78,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<TUser> GetByIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
@@ -95,7 +99,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<TUser> GetByUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
@@ -119,7 +123,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<TUser> GetByUserNameAsync(string userName, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
@@ -142,7 +146,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<IList<Claim>> GetClaimsByUserIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync(
 					"SELECT \"ClaimType\", \"ClaimValue\" FROM IdentityUserClaims WHERE \"UserId\" = @Id",
@@ -156,7 +160,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<IList<string>> GetRolesByUserIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync<string>(
 					"SELECT \"Name\" FROM IdentityRoles, IdentityUserRoles " +
@@ -171,7 +175,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<IList<UserLoginInfo>> GetUserLoginInfoByIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync(
 					"SELECT \"LoginProvider\", \"Name\", \"ProviderKey\" FROM IdentityUserLogins " +
@@ -187,7 +191,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<IList<TUser>> GetUsersByClaimAsync(Claim claim, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync<TUser>(
 					"SELECT IdentityUsers.* FROM IdentityUsers, IdentityUserClaims " +
@@ -202,7 +206,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync<TUser>(
 					"SELECT IdentityUsers.* FROM IdentityUsers, IdentityUserRoles, IdentityRoles " +
@@ -218,7 +222,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<TKey> InsertAsync(TUser user, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.ExecuteScalarAsync<TKey>(
 					"INSERT INTO IdentityUsers " +
@@ -246,7 +250,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> InsertClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultList = new List<bool>(claims.Count());
 				foreach (var claim in claims)
@@ -267,7 +271,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> InsertLoginInfoAsync(TKey id, UserLoginInfo loginInfo, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.ExecuteAsync(
 				"INSERT INTO \"dbo\".\"IdentityLogin\" (\"LoginProvider\", \"ProviderDisplayName\", \"ProviderKey\", \"UserId\") VALUES(@LoginProvider, @ProviderDisplayName, @ProviderKey, @UserId)",
@@ -288,7 +292,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> IsInRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync(
 				"SELECT 1 FROM \"IdentityUser\", \"IdentityUserRole\", \"IdentityRole\" " +
@@ -311,7 +315,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> RemoveAsync(TKey id, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.ExecuteAsync(
 				"DELETE FROM \"IdentityUser\" WHERE \"Id\" = @Id",
@@ -329,7 +333,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> RemoveClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultList = new List<bool>(claims.Count());
 				foreach (var claim in claims)
@@ -357,7 +361,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> RemoveFromRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
 				"DELETE FROM \"IdentityUserRole\" USING \"IdentityRole\" " +
@@ -376,7 +380,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> RemoveLoginAsync(TKey id, string loginProvider, string providerKey, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
 				"DELETE FROM \"IdentityLogin\" " +
@@ -397,7 +401,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> UpdateAsync(TUser user, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
 				"UPDATE \"IdentityUser\" SET " +
@@ -431,7 +435,7 @@ namespace Webshop.Infrastructure.Data
 
 		public async Task<bool> UpdateClaimAsync(TKey id, Claim oldClaim, Claim newClaim, CancellationToken cancellationToken)
 		{
-			var result = await Execute(async conn =>
+			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
 				"UPDATE \"IdentityUserClaim\" SET " +

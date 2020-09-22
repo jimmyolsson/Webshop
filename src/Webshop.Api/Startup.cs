@@ -5,12 +5,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Webshop.Api.Entities;
 using Webshop.Infrastructure;
 using Webshop.Infrastructure.Configuration;
 
@@ -31,8 +33,12 @@ namespace Webshop.Api
 			services.AddOptions<ConfigurationOptions>().Bind(_configuration)
 				.ValidateDataAnnotations();
 
+			services.AddIdentity<ApplicationUser, ApplicationRole>(x =>
+			{
+				x.Password.RequiredLength = 8;
+			}).AddDapperIdentity<int>().AddDefaultTokenProviders();
+
 			services.AddControllersWithViews();
-			services.RegisterInfrastructureServices();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +60,7 @@ namespace Webshop.Api
 			app.UseStaticFiles();
 
 			app.UseRouting();
+			app.UseAuthentication();
 
 			app.UseEndpoints(endpoints =>
 			{

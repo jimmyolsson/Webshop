@@ -4,6 +4,12 @@ using System.Text;
 
 namespace Webshop.Infrastructure.Security.Identity.Entities
 {
+	public class ApplicationIdentityUser<TKey> : ApplicationIdentityUser<TKey, ApplicationIdentityUserClaim<TKey>, ApplicationIdentityUserRole<TKey>, ApplicationIdentityUserLogin<TKey>>
+		where TKey : IEquatable<TKey>
+	{
+		public ApplicationIdentityUser() { }
+	}
+
 	public class ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
 		where TKey : IEquatable<TKey>
 	{

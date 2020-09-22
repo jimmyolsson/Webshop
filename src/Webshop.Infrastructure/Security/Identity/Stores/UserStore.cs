@@ -161,7 +161,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetByEmailAsync(normalizedEmail);
+				var result = await _userRepository.GetByEmailAsync(normalizedEmail, cancellationToken);
 
 				return result;
 			}
@@ -194,7 +194,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 					key = (TKey)Convert.ChangeType(userId, typeof(TKey));
 				}
 
-				var result = await _userRepository.GetByIdAsync(key);
+				var result = await _userRepository.GetByIdAsync(key, cancellationToken);
 
 				return result;
 			}
@@ -215,7 +215,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetByUserLoginAsync(loginProvider, providerKey);
+				var result = await _userRepository.GetByUserLoginAsync(loginProvider, providerKey, cancellationToken);
 
 				return result;
 			}
@@ -235,7 +235,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetByUserNameAsync(normalizedUserName);
+				var result = await _userRepository.GetByUserNameAsync(normalizedUserName, cancellationToken);
 
 				return result;
 			}
@@ -264,7 +264,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetClaimsByUserIdAsync(user.Id);
+				var result = await _userRepository.GetClaimsByUserIdAsync(user.Id, cancellationToken);
 
 				return result;
 			}
@@ -320,7 +320,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetUserLoginInfoByIdAsync(user.Id);
+				var result = await _userRepository.GetUserLoginInfoByIdAsync(user.Id, cancellationToken);
 
 				return result;
 			}
@@ -367,7 +367,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetRolesByUserIdAsync(user.Id);
+				var result = await _userRepository.GetRolesByUserIdAsync(user.Id, cancellationToken);
 
 				return result;
 			}
@@ -411,7 +411,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetUsersByClaimAsync(claim);
+				var result = await _userRepository.GetUsersByClaimAsync(claim, cancellationToken);
 
 				return result;
 			}
@@ -431,7 +431,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.GetUsersInRoleAsync(roleName);
+				var result = await _userRepository.GetUsersInRoleAsync(roleName, cancellationToken);
 
 				return result;
 			}
@@ -471,7 +471,7 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 
 			try
 			{
-				var result = await _userRepository.IsInRoleAsync(user.Id, roleName);
+				var result = await _userRepository.IsInRoleAsync(user.Id, roleName, cancellationToken);
 
 				return result;
 			}

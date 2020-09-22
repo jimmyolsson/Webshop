@@ -21,22 +21,22 @@ namespace Webshop.Infrastructure.Data
 		Task<TKey> InsertAsync(TUser user, CancellationToken cancellationToken);
 		Task<bool> RemoveAsync(TKey id, CancellationToken cancellationToken);
 		Task<bool> UpdateAsync(TUser user, CancellationToken cancellationToken);
-		Task<TUser> GetByIdAsync(TKey id);
-		Task<TUser> GetByUserNameAsync(string userName);
-		Task<TUser> GetByEmailAsync(string email);
-		Task<IEnumerable<TUser>> GetAllAsync();
-		Task<TUser> GetByUserLoginAsync(string loginProvider, string providerKey);
+		Task<TUser> GetByIdAsync(TKey id, CancellationToken cancellationToken);
+		Task<TUser> GetByUserNameAsync(string userName, CancellationToken cancellationToken);
+		Task<TUser> GetByEmailAsync(string email, CancellationToken cancellationToken);
+		Task<IEnumerable<TUser>> GetAllAsync(CancellationToken cancellationToken);
+		Task<TUser> GetByUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
 
 		Task<bool> InsertClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken);
 		Task<bool> InsertLoginInfoAsync(TKey id, UserLoginInfo loginInfo, CancellationToken cancellationToken);
 		Task<bool> AddToRoleAsync(TKey id, string roleName, CancellationToken cancellationToken);
 
-		Task<IList<Claim>> GetClaimsByUserIdAsync(TKey id);
-		Task<IList<string>> GetRolesByUserIdAsync(TKey id);
-		Task<IList<Microsoft.AspNetCore.Identity.UserLoginInfo>> GetUserLoginInfoByIdAsync(TKey id);
-		Task<IList<TUser>> GetUsersByClaimAsync(Claim claim);
-		Task<IList<TUser>> GetUsersInRoleAsync(string roleName);
-		Task<bool> IsInRoleAsync(TKey id, string roleName);
+		Task<IList<Claim>> GetClaimsByUserIdAsync(TKey id, CancellationToken cancellationToken);
+		Task<IList<string>> GetRolesByUserIdAsync(TKey id, CancellationToken cancellationToken);
+		Task<IList<Microsoft.AspNetCore.Identity.UserLoginInfo>> GetUserLoginInfoByIdAsync(TKey id, CancellationToken cancellationToken);
+		Task<IList<TUser>> GetUsersByClaimAsync(Claim claim, CancellationToken cancellationToken);
+		Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken);
+		Task<bool> IsInRoleAsync(TKey id, string roleName, CancellationToken cancellationToken);
 
 		Task<bool> RemoveClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken);
 		Task<bool> RemoveFromRoleAsync(TKey id, string roleName, CancellationToken cancellationToken);

@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Dapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Webshop.Infrastructure.Configuration;
+using Webshop.Infrastructure.Helpers;
 using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
@@ -22,115 +26,466 @@ namespace Webshop.Infrastructure.Data
 		where TUserLogin : ApplicationIdentityUserLogin<TKey>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 	{
+		private readonly IRoleRepository<TRole, TKey, TUserRole, TRoleClaim> _roleRepository;
+
 		internal UserRepository(IOptions<DatabaseOptions> options,
-			ILogger<UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
+			ILogger<UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger,
+			IRoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepository)
 			: base(options, logger)
 		{
+			_roleRepository = roleRepository;
 		}
 
-		public Task<bool> AddToRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
+		public Task<IEnumerable<TUser>> GetAllAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+
+		public async Task<bool> AddToRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var role = await _roleRepository.GetByNameAsync(roleName, cancellationToken);
+			if (role == null)
+				return false;
+
+			var result = await Execute(async conn =>
+			{
+				return await conn.QueryFirstOrDefaultAsync<TUserRole>(
+					"INSERT INTO IdentityUserRoles VALUES(@UserId, @RoleId)",
+					new { UserId = id, RoleId = role.Id });
+			}, cancellationToken);
+
+			return result == null ? false : true;
 		}
 
-		public Task<IEnumerable<TUser>> GetAllAsync()
+		public async Task<TUser> GetByEmailAsync(string email, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var userDictionary = new Dictionary<TKey, TUser>();
+				var queryResult = await conn.QueryAsync(
+					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" WHERE UPPER(\"Email\") = @Email",
+					param: new { Email = email },
+					map: UserRoleMapping(userDictionary),
+					splitOn: "UserId");
+
+				return userDictionary;
+
+			}, cancellationToken);
+
+			if (result.Count > 0)
+				return result.FirstOrDefault().Value;
+
+			return null;
 		}
 
-		public Task<TUser> GetByEmailAsync(string email)
+		public async Task<TUser> GetByIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var userDictionary = new Dictionary<TKey, TUser>();
+				var queryResult = await conn.QueryAsync(
+					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" WHERE \"Id\" = @Id",
+					param: new { Id = id },
+					map: UserRoleMapping(userDictionary),
+					splitOn: "UserId");
+
+				return userDictionary;
+
+			}, cancellationToken);
+
+			if (result.Count > 0)
+				return result.FirstOrDefault().Value;
+
+			return null;
 		}
 
-		public Task<TUser> GetByIdAsync(TKey id)
+		public async Task<TUser> GetByUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var userDictionary = new Dictionary<TKey, TUser>();
+				var queryResult = await conn.QueryAsync(
+					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" " +
+					"INNER JOIN IdentityUserLogins ON IdentityUsers.\"Id\" = IdentityUserLogins.\"UserId\" " +
+					"WHERE \"LoginProvider\" = @LoginProvider AND \"ProviderKey\" = @ProviderKey LIMIT 1",
+					param: new { LoginProvider = loginProvider, ProviderKey = providerKey },
+					map: UserRoleMapping(userDictionary),
+					splitOn: "UserId");
+
+				return userDictionary;
+
+			}, cancellationToken);
+
+			if (result.Count > 0)
+				return result.FirstOrDefault().Value;
+
+			return null;
 		}
 
-		public Task<TUser> GetByUserLoginAsync(string loginProvider, string providerKey)
+		public async Task<TUser> GetByUserNameAsync(string userName, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var userDictionary = new Dictionary<TKey, TUser>();
+				var queryResult = await conn.QueryAsync(
+					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" " +
+					"WHERE UPPER(\"UserName\") = @Username",
+					param: new { Username = userName },
+					map: UserRoleMapping(userDictionary),
+					splitOn: "UserId");
+
+				return userDictionary;
+
+			}, cancellationToken);
+
+			if (result.Count > 0)
+				return result.FirstOrDefault().Value;
+
+			return null;
 		}
 
-		public Task<TUser> GetByUserNameAsync(string userName)
+		public async Task<IList<Claim>> GetClaimsByUserIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.QueryAsync(
+					"SELECT \"ClaimType\", \"ClaimValue\" FROM IdentityUserClaims WHERE \"UserId\" = @Id",
+					param: new { Id = id });
+
+				return resultQuery?.Select(x => new Claim(x.ClaimType, x.ClaimValue)).ToList();
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<IList<Claim>> GetClaimsByUserIdAsync(TKey id)
+		public async Task<IList<string>> GetRolesByUserIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.QueryAsync<string>(
+					"SELECT \"Name\" FROM IdentityRoles, IdentityUserRoles " +
+					"WHERE IdentityRoles.\"Id\" = IdentityUserRoles.\"RoleId\" AND \"UserId\" = @Id",
+					param: new { Id = id });
+
+				return resultQuery.ToList();
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<IList<string>> GetRolesByUserIdAsync(TKey id)
+		public async Task<IList<UserLoginInfo>> GetUserLoginInfoByIdAsync(TKey id, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.QueryAsync(
+					"SELECT \"LoginProvider\", \"Name\", \"ProviderKey\" FROM IdentityUserLogins " +
+					"WHERE \"UserId\" = @Id",
+					param: new { Id = id });
+
+				return resultQuery?.Select(y => new UserLoginInfo(y.LoginProvider, y.ProviderKey, y.Name))
+							.ToList();
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<IList<UserLoginInfo>> GetUserLoginInfoByIdAsync(TKey id)
+		public async Task<IList<TUser>> GetUsersByClaimAsync(Claim claim, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.QueryAsync<TUser>(
+					"SELECT IdentityUsers.* FROM IdentityUsers, IdentityUserClaims " +
+					"WHERE \"ClaimValue\" = @ClaimValue AND \"ClaimType\" = @ClaimType",
+					param: new { ClaimValue = claim.Value, ClaimType = claim.Type });
+
+				return resultQuery.ToList();
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<IList<TUser>> GetUsersByClaimAsync(Claim claim)
+		public async Task<IList<TUser>> GetUsersInRoleAsync(string roleName, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.QueryAsync<TUser>(
+					"SELECT IdentityUsers.* FROM IdentityUsers, IdentityUserRoles, IdentityRoles " +
+					"WHERE UPPER(IdentityRoles.\"Name\") = @RoleName AND IdentityUserRoles.\"RoleId\" = IdentityRoles.\"Id\"" +
+					" AND IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\"",
+					param: new { RoleName = roleName });
+
+				return resultQuery.ToList();
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<IList<TUser>> GetUsersInRoleAsync(string roleName)
+		public async Task<TKey> InsertAsync(TUser user, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.ExecuteScalarAsync<TKey>(
+					"INSERT INTO IdentityUsers " +
+					"(\"Id\", \"Username\", \"Email\", \"EmailConfirmed\", \"SecurityStamp\", \"Password\", \"LockoutEnabled\", \"LockoutEnd\", \"AccessFailedCount\") " +
+					"VALUES(@Id @Username, @Email, @EmailConfirmed, @SecurityStamp, @Password, @LockoutEnabled, @LockoutEnd, @AccessFailedCount) " +
+					" RETURNING \"Id\"",
+					param: new
+					{
+						Id = user.Id,
+						Username = user.Username,
+						Email = user.Email,
+						EmailConfirmed = user.EmailConfirmed,
+						SecurityStamp = user.SecurityStamp,
+						Password = user.Password,
+						LockoutEnabled = user.LockoutEnabled,
+						LockoutEnd = user.LockoutEnd,
+						AccessFailedCount = user.AccessFailedCount
+					});
+
+				return resultQuery;
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<TKey> InsertAsync(TUser user, CancellationToken cancellationToken)
+		public async Task<bool> InsertClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultList = new List<bool>(claims.Count());
+				foreach (var claim in claims)
+				{
+					var resultQuery = await conn.ExecuteAsync(
+						"INSERT INTO IdentityUserClaim (\"ClaimType\", \"ClaimType\", \"UserId\") " +
+						"VALUES (@ClaimType, @ClaimValue, @UserId)",
+						param: new { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = id });
+
+					resultList.Add(resultQuery > 0);
+				}
+
+				return resultList.TrueForAll(x => x);
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<bool> InsertClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+		public async Task<bool> InsertLoginInfoAsync(TKey id, UserLoginInfo loginInfo, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.ExecuteAsync(
+				"INSERT INTO \"dbo\".\"IdentityLogin\" (\"LoginProvider\", \"ProviderDisplayName\", \"ProviderKey\", \"UserId\") VALUES(@LoginProvider, @ProviderDisplayName, @ProviderKey, @UserId)",
+				param: new
+				{
+					UserId = id,
+					LoginProvider = loginInfo.LoginProvider,
+					ProviderKey = loginInfo.ProviderKey,
+					ProviderDisplay = loginInfo.ProviderDisplayName
+				});
+
+				return resultQuery > 0;
+
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<bool> InsertLoginInfoAsync(TKey id, UserLoginInfo loginInfo, CancellationToken cancellationToken)
+		public async Task<bool> IsInRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.QueryAsync(
+				"SELECT 1 FROM \"IdentityUser\", \"IdentityUserRole\", \"IdentityRole\" " +
+				"WHERE UPPER(\"IdentityRole\".\"Name\") = @RoleName " +
+				"AND \"IdentityUser\".\"Id\" = @UserId " +
+				"AND \"IdentityUserRole\".\"RoleId\" = \"IdentityRole\".\"Id\" " +
+				"AND \"IdentityUserRole\".\"UserId\" = \"IdentityUser\".\"Id\"",
+				param: new
+				{
+					UserId = id,
+					RoleName = roleName
+				});
+
+				return resultQuery.Count() > 0;
+
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<bool> IsInRoleAsync(TKey id, string roleName)
+		public async Task<bool> RemoveAsync(TKey id, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultQuery = await conn.ExecuteAsync(
+				"DELETE FROM \"IdentityUser\" WHERE \"Id\" = @Id",
+				param: new
+				{
+					Id = id,
+				});
+
+				return resultQuery > 0;
+
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<bool> RemoveAsync(TKey id, CancellationToken cancellationToken)
+		public async Task<bool> RemoveClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				var resultList = new List<bool>(claims.Count());
+				foreach (var claim in claims)
+				{
+					var resultQuery = await conn.ExecuteAsync(
+					"DELETE FROM \"IdentityUserClaim\" WHERE \"UserId\" = @UserId " +
+					"AND \"ClaimType\" = @ClaimType " +
+					"AND \"ClaimValue\" = @ClaimValue",
+					param: new
+					{
+						UserId = id,
+						ClaimValue = claim.Value,
+						ClaimType = claim.Type
+					});
+
+					resultList.Add(resultQuery > 0);
+				}
+
+				return resultList.TrueForAll(x => x);
+
+			}, cancellationToken);
+
+			return result;
 		}
 
-		public Task<bool> RemoveClaimsAsync(TKey id, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+		public async Task<bool> RemoveFromRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				return await conn.ExecuteAsync(
+				"DELETE FROM \"IdentityUserRole\" USING \"IdentityRole\" " +
+				"WHERE \"IdentityUserRole\".\"RoleId\" = \"IdentityRole\".\"Id\" " +
+				"AND \"IdentityUserRole\".\"UserId\" = @UserId AND UPPER(\"IdentityRole\".\"Name\") = @RoleName",
+				param: new
+				{
+					UserId = id,
+					RoleName = roleName
+				});
+
+			}, cancellationToken);
+
+			return result > 0;
 		}
 
-		public Task<bool> RemoveFromRoleAsync(TKey id, string roleName, CancellationToken cancellationToken)
+		public async Task<bool> RemoveLoginAsync(TKey id, string loginProvider, string providerKey, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				return await conn.ExecuteAsync(
+				"DELETE FROM \"IdentityLogin\" " +
+				"WHERE \"UserId\" = @UserId " +
+				"AND \"LoginProvider\" = @LoginProvider " +
+				"AND \"ProviderKey\" = @ProviderKey",
+				param: new
+				{
+					UserId = id,
+					LoginProvider = loginProvider,
+					ProviderKey = providerKey
+				});
+
+			}, cancellationToken);
+
+			return result > 0;
 		}
 
-		public Task<bool> RemoveLoginAsync(TKey id, string loginProvider, string providerKey, CancellationToken cancellationToken)
+		public async Task<bool> UpdateAsync(TUser user, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				return await conn.ExecuteAsync(
+				"UPDATE \"IdentityUser\" SET " +
+				"\"AccessFailedCount\" = @AccessFailedCount, " +
+				"\"Email\" = @Email, " +
+				"\"UserName\" = @UserName " +
+				"\"EmailConfirmed\" = @EmailConfirmed, " +
+				"\"LockoutEnabled\" = @LockoutEnabled, " +
+				"\"LockoutEnd\" = @LockoutEnd, " +
+				"\"PasswordHash\" = @PasswordHash, " +
+				"\"SecurityStamp\" = @SecurityStamp, " +
+				"\"TwoFactorEnabled\" = @TwoFactorEnabled, " +
+				"WHERE \"Id\" = @Id",
+				param: new
+				{
+					Id = user.Id,
+					Username = user.Username,
+					Email = user.Email,
+					EmailConfirmed = user.EmailConfirmed,
+					SecurityStamp = user.SecurityStamp,
+					Password = user.Password,
+					LockoutEnabled = user.LockoutEnabled,
+					LockoutEnd = user.LockoutEnd,
+					AccessFailedCount = user.AccessFailedCount
+				});
+
+			}, cancellationToken);
+
+			return result > 0;
 		}
 
-		public Task<bool> UpdateAsync(TUser user, CancellationToken cancellationToken)
+		public async Task<bool> UpdateClaimAsync(TKey id, Claim oldClaim, Claim newClaim, CancellationToken cancellationToken)
 		{
-			throw new NotImplementedException();
+			var result = await Execute(async conn =>
+			{
+				return await conn.ExecuteAsync(
+				"UPDATE \"IdentityUserClaim\" SET " +
+				"\"ClaimType\" = @NewClaimType, " +
+				"\"ClaimValue\" = @NewClaimValue " +
+				"WHERE " +
+				"\"UserId\" = @UserId AND " +
+				"\"ClaimType\" = @ClaimType AND " +
+				"\"ClaimValue\" = @ClaimValue",
+				param: new
+				{
+					UserId = id,
+					NewClaimType = newClaim.Type,
+					NewClaimValue = newClaim.Value,
+					ClaimType = oldClaim.Type,
+					ClaimValue = oldClaim.Value,
+				});
+
+			}, cancellationToken);
+
+			return result > 0;
 		}
 
-		public Task<bool> UpdateClaimAsync(TKey id, Claim oldClaim, Claim newClaim, CancellationToken cancellationToken)
+		private static Func<TUser, TUserRole, TUser> UserRoleMapping(Dictionary<TKey, TUser> userDictionary)
 		{
-			throw new NotImplementedException();
+			return new Func<TUser, TUserRole, TUser>((user, role) =>
+			{
+				var dictionaryUser = default(TUser);
+
+				if (role != null)
+				{
+					if (userDictionary.TryGetValue(user.Id, out dictionaryUser))
+					{
+						dictionaryUser.Roles.Add(role);
+					}
+					else
+					{
+						user.Roles.Add(role);
+						userDictionary.Add(user.Id, user);
+
+						dictionaryUser = user;
+					}
+				}
+				else
+				{
+					dictionaryUser = user;
+				}
+
+				return dictionaryUser;
+			});
 		}
 	}
 }

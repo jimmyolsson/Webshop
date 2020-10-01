@@ -24,7 +24,7 @@ namespace Webshop.IntegrationTests.Repository
             var roleRepository = new RoleRepository<ApplicationIdentityRole<int>, 
                                                     int, 
                                                     ApplicationIdentityUserRole<int>, 
-                                                    ApplicationIdentityRoleClaim<int>>(dataConnection);
+                                                    ApplicationIdentityRoleClaim<int>>(dataConnection.Result);
 
             _userRepository = new UserRepository<ApplicationIdentityUser<int>,
                                                 int,
@@ -32,7 +32,7 @@ namespace Webshop.IntegrationTests.Repository
                                                 ApplicationIdentityRoleClaim<int>,
                                                 ApplicationIdentityUserClaim<int>,
                                                 ApplicationIdentityUserLogin<int>,
-                                                ApplicationIdentityRole<int>>(roleRepository, dataConnection);
+                                                ApplicationIdentityRole<int>>(roleRepository, dataConnection.Result);
         }
 
         [Fact]
@@ -40,9 +40,9 @@ namespace Webshop.IntegrationTests.Repository
         {
             var user = new ApplicationIdentityUser<int>()
             {
-                Id = 3,
-                Username = "Test3",
-                Email = "Test3@Test.com",
+                Id = 2,
+                Username = "Test2",
+                Email = "Test2@Test.com",
                 Password = "SuperSecret",
                 LockoutEnabled = false,
                 LockoutEnd = null,

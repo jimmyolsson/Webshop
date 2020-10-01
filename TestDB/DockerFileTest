@@ -1,0 +1,16 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1
+
+RUN apt update -y 
+RUN apt upgrade -y
+
+# Install software 
+RUN apt-get install -y git
+
+RUN mkdir /home/test
+
+# Clone the conf files into the docker container
+RUN git clone --single-branch --branch feature/Implement-identity-with-dapper https://github.com/jimmyolsson/Webshop.git /home/test/
+
+RUN ls
+
+RUN dotnet run --project /home/test/src/Webshop.Database/Webshop.Database.csproj -- --connectionstring="User ID=webshopTester;Password=webshopTester;Server=192.168.99.100;Port=5432;Database=webshop-integration-test-db;"

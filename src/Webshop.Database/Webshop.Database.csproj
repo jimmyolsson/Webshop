@@ -6,6 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Scripts\000 - Create Identity tables.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\000 - Create Identity tables.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="dbup-core" Version="4.4.0" />
     <PackageReference Include="dbup-postgresql" Version="4.4.0" />
   </ItemGroup>

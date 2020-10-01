@@ -1,13 +1,7 @@
 ﻿using DbUp;
-using DbUp.Builder;
-using DbUp.Engine;
 using DbUp.Helpers;
 using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 
 namespace Webshop.Database
 {
@@ -32,13 +26,14 @@ namespace Webshop.Database
 						break;
 					case string s when s.Contains("--connectionstring"):
 						connectionString = arg.Substring(arg.IndexOf('=') + 1).Replace("\"", string.Empty);
+						Console.WriteLine(connectionString);
 						break;
 					default:
 						Console.WriteLine("Unknown argument");
 						return -1;
 				}
 			}
-
+			
 			var upgrader = forceRunAllScripts ? DeployChanges.To
 					.PostgresqlDatabase(connectionString)
 					.WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())

@@ -1,17 +1,11 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Webshop.Infrastructure.Configuration;
-using Webshop.Infrastructure.Helpers;
 using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data

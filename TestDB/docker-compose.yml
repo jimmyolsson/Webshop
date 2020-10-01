@@ -9,7 +9,15 @@ services:
             - "5432:5432"
         volumes: 
             - data:/var/lib/postgresql/data
-
+    
+    # testproject:
+    #     container_name: "testproject"
+    #     build:
+    #         context: .
+    #         dockerfile: DockerFileTest
+    #     depends_on:
+    #         - postgresql
+    #     entrypoint: ["dotnet"]
 volumes: 
     data:
 

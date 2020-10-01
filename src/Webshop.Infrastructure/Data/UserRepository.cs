@@ -16,7 +16,7 @@ using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
 {
-	internal class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
+	public class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
 		IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
 		where TKey : IEquatable<TKey>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
@@ -29,7 +29,7 @@ namespace Webshop.Infrastructure.Data
 		private RoleRepository<TRole, TKey, TUserRole, TRoleClaim> _roleRepository;
 		private IDataConnection _dataConnection;
 
-		internal UserRepository(RoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepository,
+		public UserRepository(RoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepository,
 			IDataConnection dataConnection)
 		{
 			_roleRepository = roleRepository;
@@ -126,13 +126,16 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
+
+				var query = "SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.userid = IdentityUsers.id " +
+					"WHERE UPPER(username) = @Username";
+
 				var queryResult = await conn.QueryAsync(
-					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
-					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" " +
-					"WHERE UPPER(\"UserName\") = @Username",
-					param: new { Username = userName },
+					query,
+					param: new { Username = userName.ToUpper() },
 					map: UserRoleMapping(userDictionary),
-					splitOn: "UserId");
+					splitOn: "userid");
 
 				return userDictionary;
 
@@ -226,9 +229,9 @@ namespace Webshop.Infrastructure.Data
 			{
 				var resultQuery = await conn.ExecuteScalarAsync<TKey>(
 					"INSERT INTO IdentityUsers " +
-					"(\"Id\", \"Username\", \"Email\", \"EmailConfirmed\", \"SecurityStamp\", \"Password\", \"LockoutEnabled\", \"LockoutEnd\", \"AccessFailedCount\") " +
-					"VALUES(@Id @Username, @Email, @EmailConfirmed, @SecurityStamp, @Password, @LockoutEnabled, @LockoutEnd, @AccessFailedCount) " +
-					" RETURNING \"Id\"",
+					"(Id, Username, Email, EmailConfirmed, SecurityStamp, Password, LockoutEnabled, LockoutEnd, AccessFailedCount)" +
+					"VALUES(@Id, @Username, @Email, @EmailConfirmed, @SecurityStamp, @Password, @LockoutEnabled, @LockoutEnd, @AccessFailedCount) " +
+					" RETURNING Id",
 					param: new
 					{
 						Id = user.Id,

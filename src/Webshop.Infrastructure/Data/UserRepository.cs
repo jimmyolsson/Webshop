@@ -1,17 +1,11 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Webshop.Infrastructure.Configuration;
-using Webshop.Infrastructure.Helpers;
 using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
@@ -126,13 +120,16 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
+
+				var query = "SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.userid = IdentityUsers.id " +
+					"WHERE UPPER(username) = @Username";
+
 				var queryResult = await conn.QueryAsync(
-					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
-					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" " +
-					"WHERE UPPER(\"UserName\") = @Username",
-					param: new { Username = userName },
+					query,
+					param: new { Username = userName.ToUpper() },
 					map: UserRoleMapping(userDictionary),
-					splitOn: "UserId");
+					splitOn: "userid");
 
 				return userDictionary;
 
@@ -226,9 +223,9 @@ namespace Webshop.Infrastructure.Data
 			{
 				var resultQuery = await conn.ExecuteScalarAsync<TKey>(
 					"INSERT INTO IdentityUsers " +
-					"(\"Id\", \"Username\", \"Email\", \"EmailConfirmed\", \"SecurityStamp\", \"Password\", \"LockoutEnabled\", \"LockoutEnd\", \"AccessFailedCount\") " +
-					"VALUES(@Id @Username, @Email, @EmailConfirmed, @SecurityStamp, @Password, @LockoutEnabled, @LockoutEnd, @AccessFailedCount) " +
-					" RETURNING \"Id\"",
+					"(Id, Username, Email, EmailConfirmed, SecurityStamp, Password, LockoutEnabled, LockoutEnd, AccessFailedCount)" +
+					"VALUES(@Id, @Username, @Email, @EmailConfirmed, @SecurityStamp, @Password, @LockoutEnabled, @LockoutEnd, @AccessFailedCount) " +
+					" RETURNING Id",
 					param: new
 					{
 						Id = user.Id,

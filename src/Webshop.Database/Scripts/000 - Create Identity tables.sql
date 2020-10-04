@@ -42,7 +42,8 @@ CREATE TABLE IdentityUserClaims(
 
 CREATE TABLE IdentityRoles(
     Id INT NOT NULL,
-    Name VARCHAR(255) NOT NULL
+    Name VARCHAR(255) NOT NULL,
+    PRIMARY KEY (Id)
 );
 
 CREATE TABLE IdentityRoleClaims(

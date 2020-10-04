@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{6F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webshop.Database", "src\Webshop.Database\Webshop.Database.csproj", "{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webshop.IntegrationTests", "Webshop.IntegrationTests\Webshop.IntegrationTests.csproj", "{E681F7CC-405C-4521-8867-137C75A7F999}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -103,6 +105,18 @@ Global
 		{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}.Release|x64.Build.0 = Release|Any CPU
 		{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}.Release|x86.ActiveCfg = Release|Any CPU
 		{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}.Release|x86.Build.0 = Release|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Debug|x64.Build.0 = Debug|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Debug|x86.Build.0 = Debug|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Release|x64.ActiveCfg = Release|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Release|x64.Build.0 = Release|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Release|x86.ActiveCfg = Release|Any CPU
+		{E681F7CC-405C-4521-8867-137C75A7F999}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,6 +129,7 @@ Global
 		{076EA61F-F192-4570-AB4E-9CB2109AEF28} = {D2E557E0-E9BD-4A5D-AEBB-84919DB576C6}
 		{6F32321C-E297-4C73-B9EA-2B28F28A98CE} = {0B19E3E5-6116-4E38-AEC1-95E44250EB93}
 		{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91} = {6F32321C-E297-4C73-B9EA-2B28F28A98CE}
+		{E681F7CC-405C-4521-8867-137C75A7F999} = {D2E557E0-E9BD-4A5D-AEBB-84919DB576C6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {48DC03A1-366B-42FD-A3FD-794118AF40B7}

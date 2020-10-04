@@ -11,9 +11,9 @@ namespace Webshop.Infrastructure.Data
 	public class DataConnection : IDataConnection
     {
 		private readonly IOptions<DatabaseOptions> _options;
-		private readonly ILogger _logger;
+		private readonly ILogger<DataConnection> _logger;
 
-		public DataConnection(IOptions<DatabaseOptions> options, ILogger logger)
+		public DataConnection(IOptions<DatabaseOptions> options, ILogger<DataConnection> logger)
 		{
 			_options = options;
 			_logger = logger;

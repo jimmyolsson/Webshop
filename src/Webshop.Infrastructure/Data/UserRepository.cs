@@ -16,20 +16,20 @@ using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
 {
-	internal class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
+	public class UserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
 		IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
-		where TKey : IEquatable<TKey>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
+		where TKey : IEquatable<TKey>
 		where TUserRole : ApplicationIdentityUserRole<TKey>
 		where TRoleClaim : ApplicationIdentityRoleClaim<TKey>
 		where TUserClaim : ApplicationIdentityUserClaim<TKey>
 		where TUserLogin : ApplicationIdentityUserLogin<TKey>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 	{
-		private RoleRepository<TRole, TKey, TUserRole, TRoleClaim> _roleRepository;
-		private IDataConnection _dataConnection;
+		private readonly IRoleRepository<TRole, TKey, TUserRole, TRoleClaim> _roleRepository;
+		private readonly IDataConnection _dataConnection;
 
-		internal UserRepository(RoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepository,
+		public UserRepository(IRoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepository,
 			IDataConnection dataConnection)
 		{
 			_roleRepository = roleRepository;

@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Webshop.Infrastructure.Data;
@@ -14,7 +13,7 @@ using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Security.Identity.Stores
 {
-	public class UserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
+	public class IdentityUserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> :
 		IUserStore<TUser>,
 		IUserLoginStore<TUser>,
 		IUserRoleStore<TUser>,
@@ -23,7 +22,9 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 		IUserSecurityStampStore<TUser>,
 		IUserEmailStore<TUser>,
 		IUserLockoutStore<TUser>,
+		IUserPhoneNumberStore<TUser>,
 		IQueryableUserStore<TUser>,
+		IUserTwoFactorStore<TUser>,
 		IUserAuthenticationTokenStore<TUser>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
 		where TKey : IEquatable<TKey>
@@ -37,10 +38,10 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 		public IQueryable<TUser> Users => throw new NotImplementedException();
 
 		private readonly IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> _userRepository;
-		private readonly ILogger<UserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> _logger;
+		private readonly ILogger<IdentityUserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> _logger;
 
-		internal UserStore(IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> userRepository,
-			ILogger<UserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
+		public IdentityUserStore(IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole> userRepository,
+			ILogger<IdentityUserStore<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>> logger)
 		{
 			_userRepository = userRepository;
 			_logger = logger;
@@ -703,6 +704,72 @@ namespace Webshop.Infrastructure.Security.Identity.Stores
 					new IdentityError{ Description = ex.Message }
 				});
 			}
+		}
+
+		public Task SetPhoneNumberAsync(TUser user, string phoneNumber, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			user.PhoneNumber = phoneNumber;
+
+			return Task.CompletedTask;
+		}
+
+		public Task<string> GetPhoneNumberAsync(TUser user, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			return Task.FromResult(user.PhoneNumber);
+		}
+
+		public Task<bool> GetPhoneNumberConfirmedAsync(TUser user, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			return Task.FromResult(user.PhoneNumberConfirmed);
+		}
+
+		public Task SetPhoneNumberConfirmedAsync(TUser user, bool confirmed, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			user.PhoneNumberConfirmed = confirmed;
+
+			return Task.CompletedTask;
+		}
+
+		public Task SetTwoFactorEnabledAsync(TUser user, bool enabled, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			user.TwoFactorEnabled = enabled;
+
+			return Task.CompletedTask;
+		}
+
+		public Task<bool> GetTwoFactorEnabledAsync(TUser user, CancellationToken cancellationToken)
+		{
+			cancellationToken.ThrowIfCancellationRequested();
+
+			if (user == null)
+				throw new ArgumentNullException(nameof(user));
+
+			return Task.FromResult(user.TwoFactorEnabled);
 		}
 	}
 }

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Webshop.Api.Entities;
 using Webshop.Infrastructure;
 using Webshop.Infrastructure.Configuration;
+using Webshop.Infrastructure.Security;
 
 namespace Webshop.Api
 {
@@ -33,10 +34,12 @@ namespace Webshop.Api
 			services.AddOptions<ConfigurationOptions>().Bind(_configuration)
 				.ValidateDataAnnotations();
 
+			services.ConfigureDapper();
+
 			services.AddIdentity<ApplicationUser, ApplicationRole>(x =>
 			{
 				x.Password.RequiredLength = 8;
-			}).AddDapperIdentity<int>().AddDefaultTokenProviders();
+			}).AddDapperIdentityStores<int>().AddDefaultTokenProviders();
 
 			services.AddControllersWithViews();
 		}
@@ -49,18 +52,18 @@ namespace Webshop.Api
 				app.UseDeveloperExceptionPage();
 				app.UseWebAssemblyDebugging();
 			}
-			else 
+			else
 			{
 				app.UseExceptionHandler("/Error");
 				app.UseHsts();
 			}
+			app.UseAuthentication();
 
 			app.UseHttpsRedirection();
 			app.UseBlazorFrameworkFiles();
 			app.UseStaticFiles();
 
 			app.UseRouting();
-			app.UseAuthentication();
 
 			app.UseEndpoints(endpoints =>
 			{

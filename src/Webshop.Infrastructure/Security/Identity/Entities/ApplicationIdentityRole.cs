@@ -1,13 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Webshop.Infrastructure.Security.Identity.Entities
 {
+	public class ApplicationIdentityRole : ApplicationIdentityRole<int>
+	{
+		public ApplicationIdentityRole() { }
+		public ApplicationIdentityRole(string roleName) : this()
+		{
+			Name = roleName;
+		}
+	}
+
 	public class ApplicationIdentityRole<TKey> : ApplicationIdentityRole<TKey, ApplicationIdentityUserRole<TKey>, ApplicationIdentityRoleClaim<TKey>>
 		where TKey : IEquatable<TKey>
 	{
 		public ApplicationIdentityRole() { }
+		public ApplicationIdentityRole(string roleName) : this()
+		{
+			Name = roleName;
+		}
 	}
 
 	public class ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>

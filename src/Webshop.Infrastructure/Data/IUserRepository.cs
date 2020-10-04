@@ -9,7 +9,7 @@ using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
 {
-	internal interface IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
+	public interface IUserRepository<TUser, TKey, TUserRole, TRoleClaim, TUserClaim, TUserLogin, TRole>
 		where TUser : ApplicationIdentityUser<TKey, TUserClaim, TUserRole, TUserLogin>
 		where TKey : IEquatable<TKey>
 		where TUserRole : ApplicationIdentityUserRole<TKey>

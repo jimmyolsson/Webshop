@@ -14,18 +14,18 @@ using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Security.Identity.Stores
 {
-	internal class RoleStore<TRole, TKey, TUserRole, TRoleClaim> :
-		IRoleStore<TRole>,
+	public class IdentityRoleStore<TRole, TKey, TUserRole, TRoleClaim> 
+		: IRoleStore<TRole>,
 		IRoleClaimStore<TRole>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 		where TKey : IEquatable<TKey>
 		where TUserRole : ApplicationIdentityUserRole<TKey>
 		where TRoleClaim : ApplicationIdentityRoleClaim<TKey>
 	{
-		private readonly ILogger<RoleStore<TRole, TKey, TUserRole, TRoleClaim>> _logger;
+		private readonly ILogger<IdentityRoleStore<TRole, TKey, TUserRole, TRoleClaim>> _logger;
 		private readonly IRoleRepository<TRole, TKey, TUserRole, TRoleClaim> _roleRepository;
 
-		internal RoleStore(ILogger<RoleStore<TRole, TKey, TUserRole, TRoleClaim>> logger,
+		public IdentityRoleStore(ILogger<IdentityRoleStore<TRole, TKey, TUserRole, TRoleClaim>> logger,
 							IRoleRepository<TRole, TKey, TUserRole, TRoleClaim> roleRepo)
 		{
 			_roleRepository = roleRepo;

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Webshop.Infrastructure.Security.Identity.Entities
 {
-	public class ApplicationIdentityRoleClaim<TKey> 
+	public class ApplicationIdentityRoleClaim<TKey>
 		where TKey : IEquatable<TKey>
 	{
 		public virtual int Id { get; set; }

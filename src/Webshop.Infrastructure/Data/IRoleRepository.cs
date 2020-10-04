@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Webshop.Infrastructure.Security.Identity.Entities;
 
 namespace Webshop.Infrastructure.Data
 {
-	internal interface IRoleRepository<TRole, TKey, TUserRole, TRoleClaim>
+	public interface IRoleRepository<TRole, TKey, TUserRole, TRoleClaim>
 		where TRole : ApplicationIdentityRole<TKey, TUserRole, TRoleClaim>
 		where TKey : IEquatable<TKey>
 		where TUserRole : ApplicationIdentityUserRole<TKey>

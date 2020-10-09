@@ -23,3 +23,6 @@ volumes:
 
 # Connectionstring with current container set up: 
 # "User ID=webshop;Password=webshop;Server=192.168.99.100;Port=5432;Database=webshopdb;"
+
+# IF Runnung dev in WSL 2
+# connectionString = "User ID=webshop;Password=webshop;Server=localhost;Port=5432;Database=webshopdb;"

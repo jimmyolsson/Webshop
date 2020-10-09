@@ -1,21 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Webshop.Api.Entities;
 using Webshop.Infrastructure;
 using Webshop.Infrastructure.Configuration;
-using Webshop.Infrastructure.Security;
 
 namespace Webshop.Api
 {
@@ -39,7 +30,10 @@ namespace Webshop.Api
 			services.AddIdentity<ApplicationUser, ApplicationRole>(x =>
 			{
 				x.Password.RequiredLength = 8;
+
 			}).AddDapperIdentityStores<int>().AddDefaultTokenProviders();
+
+			services.AddAuthentication();
 
 			services.AddControllersWithViews();
 		}
@@ -57,6 +51,7 @@ namespace Webshop.Api
 				app.UseExceptionHandler("/Error");
 				app.UseHsts();
 			}
+			
 			app.UseAuthentication();
 
 			app.UseHttpsRedirection();

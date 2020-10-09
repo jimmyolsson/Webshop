@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{6F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webshop.Database", "src\Webshop.Database\Webshop.Database.csproj", "{3FE5FA6E-D6C6-4027-AD7F-A4BE88DA2F91}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Webshop.IntegrationTests", "Webshop.IntegrationTests\Webshop.IntegrationTests.csproj", "{E681F7CC-405C-4521-8867-137C75A7F999}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webshop.IntegrationTests", "Webshop.IntegrationTests\Webshop.IntegrationTests.csproj", "{E681F7CC-405C-4521-8867-137C75A7F999}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

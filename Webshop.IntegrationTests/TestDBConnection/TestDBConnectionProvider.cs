@@ -22,7 +22,7 @@ namespace Webshop.IntegrationTests.TestDBConnection
                 ConnectionString = _developmentConnectionString
             });
 
-            var logger = new Mock<ILogger>();
+            var logger = new Mock<ILogger<DataConnection>>();
 
             var dataConnection = new DataConnection(options, logger.Object);
             await seedDataBase(dataConnection);

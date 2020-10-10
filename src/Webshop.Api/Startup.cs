@@ -7,16 +7,18 @@ using Microsoft.Extensions.Hosting;
 using Webshop.Api.Entities;
 using Webshop.Infrastructure;
 using Webshop.Infrastructure.Configuration;
+using Microsoft.Extensions.Options;
+using System;
 
 namespace Webshop.Api
 {
 	public class Startup
 	{
-		private IConfiguration _configuration { get; }
+        private IConfiguration _configuration { get; }
 
 		public Startup(IWebHostEnvironment currentEnvironment, IConfiguration configuration)
 		{
-			_configuration = configuration;
+            _configuration = configuration;
 		}
 
 		// This method gets called by the runtime. Use this method to add services to the container.
@@ -24,6 +26,13 @@ namespace Webshop.Api
 		{
 			services.AddOptions<ConfigurationOptions>().Bind(_configuration)
 				.ValidateDataAnnotations();
+
+			var connectionString = _configuration.GetConnectionString("WebShopIdentityDatabaseLinux");
+
+			services.AddScoped<IOptions<DatabaseOptions>>((service) => Options.Create(new DatabaseOptions
+			{
+				ConnectionString = connectionString
+			}));
 
 			services.ConfigureDapper();
 

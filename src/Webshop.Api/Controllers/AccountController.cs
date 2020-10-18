@@ -13,19 +13,22 @@ namespace Webshop.Api.Controllers
     {
         
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly ILogger<WeatherForecastController> _logger;
 
         public AccountController(SignInManager<ApplicationUser> signInManager,
+                                    UserManager<ApplicationUser> userManager,
                                  ILogger<WeatherForecastController> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
         [HttpGet]
         public async Task<ApplicationUserModel> Get()
         {
-            var signInResult = await _signInManager.PasswordSignInAsync("test", "Pwd12345.", true, false);
+            var signInResult = await _signInManager.PasswordSignInAsync("TestUser", "Pwd12345.", true, false);
 
 
             return await Task.FromResult(new ApplicationUserModel()
@@ -39,10 +42,9 @@ namespace Webshop.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<ApplicationUserModel> Login(string userName, string password)
+        public async Task<ApplicationUserModel> Login(LoginRequest request)
         {
-            var result = await _signInManager.PasswordSignInAsync(userName, password, false, true);
-
+            var result = await _signInManager.PasswordSignInAsync(request.UserName, request.Password, false, true);
 
             return await Task.FromResult(new ApplicationUserModel()
             {

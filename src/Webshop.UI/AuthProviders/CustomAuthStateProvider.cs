@@ -30,7 +30,7 @@ namespace Webshop.UI.AuthProviders
         {
             var loginRequest = new LoginRequest
             {
-                UserName = "Test",
+                UserName = "TestUser",
                 Password = "Pwd12345."
             };
 

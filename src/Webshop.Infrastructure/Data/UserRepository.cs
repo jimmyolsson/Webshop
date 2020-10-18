@@ -55,7 +55,7 @@ namespace Webshop.Infrastructure.Data
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
 					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
-					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" WHERE UPPER(\"Email\") = @Email",
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.userId = IdentityUsers.id WHERE UPPER(Email) = @Email",
 					param: new { Email = email },
 					map: UserRoleMapping(userDictionary),
 					splitOn: "UserId");
@@ -76,7 +76,7 @@ namespace Webshop.Infrastructure.Data
 			{
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
-					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" WHERE \"Id\" = @Id",
+					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers LEFT JOIN IdentityUserRoles ON IdentityUserRoles.userId = IdentityUsers.id WHERE id = @Id",
 					param: new { Id = id },
 					map: UserRoleMapping(userDictionary),
 					splitOn: "UserId");
@@ -98,9 +98,9 @@ namespace Webshop.Infrastructure.Data
 				var userDictionary = new Dictionary<TKey, TUser>();
 				var queryResult = await conn.QueryAsync(
 					"SELECT IdentityUsers.*, IdentityUserRoles.* FROM IdentityUsers " +
-					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\" " +
-					"INNER JOIN IdentityUserLogins ON IdentityUsers.\"Id\" = IdentityUserLogins.\"UserId\" " +
-					"WHERE \"LoginProvider\" = @LoginProvider AND \"ProviderKey\" = @ProviderKey LIMIT 1",
+					"LEFT JOIN IdentityUserRoles ON IdentityUserRoles.userId = IdentityUsers.id" +
+					"INNER JOIN IdentityUserLogins ON IdentityUsers.id = IdentityUserLogins.userId " +
+					"WHERE LoginProvider = @LoginProvider AND ProviderKey = @ProviderKey LIMIT 1",
 					param: new { LoginProvider = loginProvider, ProviderKey = providerKey },
 					map: UserRoleMapping(userDictionary),
 					splitOn: "UserId");
@@ -146,7 +146,7 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync(
-					"SELECT \"ClaimType\", \"ClaimValue\" FROM IdentityUserClaims WHERE \"UserId\" = @Id",
+					"SELECT ClaimType, ClaimValue FROM IdentityUserClaims WHERE userId = @Id",
 					param: new { Id = id });
 
 				return resultQuery?.Select(x => new Claim(x.ClaimType, x.ClaimValue)).ToList();
@@ -160,8 +160,8 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync<string>(
-					"SELECT \"Name\" FROM IdentityRoles, IdentityUserRoles " +
-					"WHERE IdentityRoles.\"Id\" = IdentityUserRoles.\"RoleId\" AND \"UserId\" = @Id",
+					"SELECT Name FROM IdentityRoles, IdentityUserRoles " +
+					"WHERE IdentityRoles.id = IdentityUserRoles.roleId AND userId = @Id",
 					param: new { Id = id });
 
 				return resultQuery.ToList();
@@ -175,8 +175,8 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync(
-					"SELECT \"LoginProvider\", \"Name\", \"ProviderKey\" FROM IdentityUserLogins " +
-					"WHERE \"UserId\" = @Id",
+					"SELECT LoginProvider, Name, ProviderKey FROM IdentityUserLogins " +
+					"WHERE UserId = @Id",
 					param: new { Id = id });
 
 				return resultQuery?.Select(y => new UserLoginInfo(y.LoginProvider, y.ProviderKey, y.Name))
@@ -192,7 +192,7 @@ namespace Webshop.Infrastructure.Data
 			{
 				var resultQuery = await conn.QueryAsync<TUser>(
 					"SELECT IdentityUsers.* FROM IdentityUsers, IdentityUserClaims " +
-					"WHERE \"ClaimValue\" = @ClaimValue AND \"ClaimType\" = @ClaimType",
+					"WHERE ClaimValue = @ClaimValue AND ClaimType = @ClaimType",
 					param: new { ClaimValue = claim.Value, ClaimType = claim.Type });
 
 				return resultQuery.ToList();
@@ -207,8 +207,8 @@ namespace Webshop.Infrastructure.Data
 			{
 				var resultQuery = await conn.QueryAsync<TUser>(
 					"SELECT IdentityUsers.* FROM IdentityUsers, IdentityUserRoles, IdentityRoles " +
-					"WHERE UPPER(IdentityRoles.\"Name\") = @RoleName AND IdentityUserRoles.\"RoleId\" = IdentityRoles.\"Id\"" +
-					" AND IdentityUserRoles.\"UserId\" = IdentityUsers.\"Id\"",
+					"WHERE UPPER(IdentityRoles.Name) = @RoleName AND IdentityUserRoles.RoleId = IdentityRoles.Id" +
+					" AND IdentityUserRoles.UserId = IdentityUsers.Id",
 					param: new { RoleName = roleName });
 
 				return resultQuery.ToList();
@@ -253,7 +253,7 @@ namespace Webshop.Infrastructure.Data
 				foreach (var claim in claims)
 				{
 					var resultQuery = await conn.ExecuteAsync(
-						"INSERT INTO IdentityUserClaim (\"ClaimType\", \"ClaimType\", \"UserId\") " +
+						"INSERT INTO IdentityUserClaim (ClaimType, ClaimType, UserId) " +
 						"VALUES (@ClaimType, @ClaimValue, @UserId)",
 						param: new { ClaimType = claim.Type, ClaimValue = claim.Value, UserId = id });
 
@@ -271,7 +271,7 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.ExecuteAsync(
-				"INSERT INTO \"dbo\".\"IdentityLogin\" (\"LoginProvider\", \"ProviderDisplayName\", \"ProviderKey\", \"UserId\") VALUES(@LoginProvider, @ProviderDisplayName, @ProviderKey, @UserId)",
+				"INSERT INTO dbo.IdentityLogin (LoginProvider, ProviderDisplayName, ProviderKey, UserId) VALUES(@LoginProvider, @ProviderDisplayName, @ProviderKey, @UserId)",
 				param: new
 				{
 					UserId = id,
@@ -292,11 +292,11 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.QueryAsync(
-				"SELECT 1 FROM \"IdentityUser\", \"IdentityUserRole\", \"IdentityRole\" " +
-				"WHERE UPPER(\"IdentityRole\".\"Name\") = @RoleName " +
-				"AND \"IdentityUser\".\"Id\" = @UserId " +
-				"AND \"IdentityUserRole\".\"RoleId\" = \"IdentityRole\".\"Id\" " +
-				"AND \"IdentityUserRole\".\"UserId\" = \"IdentityUser\".\"Id\"",
+				"SELECT 1 FROM IdentityUser, IdentityUserRole, IdentityRole " +
+				"WHERE UPPER(IdentityRole.Name) = @RoleName " +
+				"AND IdentityUser.Id = @UserId " +
+				"AND IdentityUserRole.RoleId = IdentityRole.Id " +
+				"AND IdentityUserRole.UserId = IdentityUser.Id",
 				param: new
 				{
 					UserId = id,
@@ -315,7 +315,7 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				var resultQuery = await conn.ExecuteAsync(
-				"DELETE FROM \"IdentityUser\" WHERE \"Id\" = @Id",
+				"DELETE FROM IdentityUser WHERE Id = @Id",
 				param: new
 				{
 					Id = id,
@@ -336,9 +336,9 @@ namespace Webshop.Infrastructure.Data
 				foreach (var claim in claims)
 				{
 					var resultQuery = await conn.ExecuteAsync(
-					"DELETE FROM \"IdentityUserClaim\" WHERE \"UserId\" = @UserId " +
-					"AND \"ClaimType\" = @ClaimType " +
-					"AND \"ClaimValue\" = @ClaimValue",
+					"DELETE FROM IdentityUserClaim WHERE UserId = @UserId " +
+					"AND ClaimType = @ClaimType " +
+					"AND ClaimValue = @ClaimValue",
 					param: new
 					{
 						UserId = id,
@@ -361,9 +361,9 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
-				"DELETE FROM \"IdentityUserRole\" USING \"IdentityRole\" " +
-				"WHERE \"IdentityUserRole\".\"RoleId\" = \"IdentityRole\".\"Id\" " +
-				"AND \"IdentityUserRole\".\"UserId\" = @UserId AND UPPER(\"IdentityRole\".\"Name\") = @RoleName",
+				"DELETE FROM IdentityUserRole USING IdentityRole " +
+				"WHERE IdentityUserRole.RoleId = IdentityRole.Id " +
+				"AND IdentityUserRole.UserId = @UserId AND UPPER(IdentityRole.Name) = @RoleName",
 				param: new
 				{
 					UserId = id,
@@ -380,10 +380,10 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
-				"DELETE FROM \"IdentityLogin\" " +
-				"WHERE \"UserId\" = @UserId " +
-				"AND \"LoginProvider\" = @LoginProvider " +
-				"AND \"ProviderKey\" = @ProviderKey",
+				"DELETE FROM IdentityLogin " +
+				"WHERE UserId = @UserId " +
+				"AND LoginProvider = @LoginProvider " +
+				"AND ProviderKey = @ProviderKey",
 				param: new
 				{
 					UserId = id,
@@ -401,17 +401,17 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
-				"UPDATE \"IdentityUser\" SET " +
-				"\"AccessFailedCount\" = @AccessFailedCount, " +
-				"\"Email\" = @Email, " +
-				"\"UserName\" = @UserName " +
-				"\"EmailConfirmed\" = @EmailConfirmed, " +
-				"\"LockoutEnabled\" = @LockoutEnabled, " +
-				"\"LockoutEnd\" = @LockoutEnd, " +
-				"\"PasswordHash\" = @PasswordHash, " +
-				"\"SecurityStamp\" = @SecurityStamp, " +
-				"\"TwoFactorEnabled\" = @TwoFactorEnabled, " +
-				"WHERE \"Id\" = @Id",
+				"UPDATE IdentityUser SET " +
+				"AccessFailedCount = @AccessFailedCount, " +
+				"Email = @Email, " +
+				"UserName = @UserName " +
+				"EmailConfirmed = @EmailConfirmed, " +
+				"LockoutEnabled = @LockoutEnabled, " +
+				"LockoutEnd = @LockoutEnd, " +
+				"PasswordHash = @PasswordHash, " +
+				"SecurityStamp = @SecurityStamp, " +
+				"TwoFactorEnabled = @TwoFactorEnabled, " +
+				"WHERE Id = @Id",
 				param: new
 				{
 					Id = user.Id,
@@ -435,13 +435,13 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.ExecuteAsync(
-				"UPDATE \"IdentityUserClaim\" SET " +
-				"\"ClaimType\" = @NewClaimType, " +
-				"\"ClaimValue\" = @NewClaimValue " +
+				"UPDATE IdentityUserClaim SET " +
+				"ClaimType = @NewClaimType, " +
+				"ClaimValue = @NewClaimValue " +
 				"WHERE " +
-				"\"UserId\" = @UserId AND " +
-				"\"ClaimType\" = @ClaimType AND " +
-				"\"ClaimValue\" = @ClaimValue",
+				"UserId = @UserId AND " +
+				"ClaimType = @ClaimType AND " +
+				"ClaimValue = @ClaimValue",
 				param: new
 				{
 					UserId = id,

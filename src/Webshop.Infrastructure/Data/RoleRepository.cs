@@ -82,7 +82,7 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.QueryAsync(
-					"DELETE FROM IdentityRoleClaims WHERE \"Id\" = @Id",
+					"DELETE FROM IdentityRoleClaims WHERE Id = @Id",
 					new { Id = id });
 			}, cancellationToken);
 
@@ -94,7 +94,7 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.QueryAsync(
-					"DELETE FROM IdentityRoleClaims WHERE \"RoleId\" = @RoleId AND \"ClaimType\" = @ClaimType AND \"ClaimValue\" = @ClaimValue",
+					"DELETE FROM IdentityRoleClaims WHERE RoleId = @RoleId AND ClaimType = @ClaimType AND ClaimValue = @ClaimValue",
 					new { RoleId = role.Id, ClaimType = claim.Type, ClaimValue = claim.Value });
 			}, cancellationToken);
 
@@ -106,7 +106,7 @@ namespace Webshop.Infrastructure.Data
 			var result = await _dataConnection.Execute(async conn =>
 			{
 				return await conn.QueryAsync<TRole>(
-					"UPDATE IdentityRoles SET \"Id\" = @RoleId, \"Name\" = @RoleName WHERE \"Id\" = %ID%",
+					"UPDATE IdentityRoles SET Id = @RoleId, Name = @RoleName WHERE Id = %ID%",
 					new { RoleId = role.Id, RoleName = role.Name });
 			}, cancellationToken);
 

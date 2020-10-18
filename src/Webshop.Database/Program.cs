@@ -1,4 +1,5 @@
 ﻿using DbUp;
+using DbUp.Engine;
 using DbUp.Helpers;
 using System;
 using System.Reflection;
@@ -14,6 +15,7 @@ namespace Webshop.Database
 		static int Main(string[] args)
 		{
 			bool forceRunAllScripts = false;
+			bool includeDefaultDevData = false;
 			string connectionString = string.Empty;
 			string scriptsPath = string.Empty;
 
@@ -28,42 +30,75 @@ namespace Webshop.Database
 						connectionString = arg.Substring(arg.IndexOf('=') + 1).Replace("\"", string.Empty);
 						Console.WriteLine(connectionString);
 						break;
+					case string s when s.Contains("--defaultdata"):
+						includeDefaultDevData = true;
+						break;
 					default:
 						Console.WriteLine("Unknown argument");
 						return -1;
 				}
 			}
-			
-			var upgrader = forceRunAllScripts ? DeployChanges.To
-					.PostgresqlDatabase(connectionString)
-					.WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
-					.LogToConsole()
-					.JournalTo(new NullJournal())
-					.Build()
-			:
-			DeployChanges.To
-					.PostgresqlDatabase(connectionString)
-					.WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
-					.LogToConsole()
-					.Build();
 
-			var result = upgrader.PerformUpgrade();
+			var upgraderBuilder = DeployChanges.To
+									.PostgresqlDatabase(connectionString)
+									.WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(), script =>
+									{
+										return !script.ToLower().Contains("devdefault");
+									})
+									.LogToConsole();
+			
+			if (forceRunAllScripts)
+			{
+				upgraderBuilder.JournalTo(new NullJournal());
+			}
+
+			var result = upgraderBuilder.Build()
+										.PerformUpgrade();
+
+			if (result.Successful && includeDefaultDevData)
+			{
+				result = insertDefaultDevData(connectionString);
+			}
 
 			if (!result.Successful)
 			{
-				Console.ForegroundColor = ConsoleColor.Red;
-				Console.WriteLine(result.Error);
-				Console.ResetColor();
-#if DEBUG
-				Console.ReadLine();
-#endif
-				return -1;
+				return printfailure(result.Error);
 			}
 
+			return printSuccess();
+		}
+
+		private static DatabaseUpgradeResult insertDefaultDevData(string connectionString)
+		{
+			var upgrader = DeployChanges.To
+								.PostgresqlDatabase(connectionString)
+								.WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly(), script =>
+								{
+									return script.ToLower().Contains("devdefault");
+								})
+								.LogToConsole()
+								.Build();
+
+			return upgrader.PerformUpgrade();
+		}
+
+		private static int printSuccess()
+		{
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.WriteLine("Success!");
 			Console.ResetColor();
 			return 0;
+		}
+
+		private static int printfailure(Exception exception)
+		{
+			Console.ForegroundColor = ConsoleColor.Red;
+			Console.WriteLine(exception);
+			Console.ResetColor();
+#if DEBUG
+			Console.ReadLine();
+#endif
+			return -1;
 		}
 	}
 }

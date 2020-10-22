@@ -26,3 +26,7 @@ volumes:
 
 # IF Runnung dev in WSL 2
 # connectionString = "User ID=webshop;Password=webshop;Server=localhost;Port=5432;Database=webshopdb;"
+
+# Run database migration with default data
+# If not running in WSL2 use Server=192.168.99.100 instead of Server=localhost
+# dotnet run --project src/Webshop.Database/Webshop.Database.csproj -- --connectionstring="User ID=webshop;Password=webshop;Server=localhost;Port=5432;Database=webshopdb;" --defaultdata

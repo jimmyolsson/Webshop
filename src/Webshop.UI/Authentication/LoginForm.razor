@@ -1,0 +1,45 @@
+﻿@page "/authentication/login"
+@inject HttpClient _http
+@inject NavigationManager _navigation
+
+<h1>Login</h1>
+
+<form>
+    <div class="form-group">
+        <label for="txtUserName">User name</label>
+        <input type="text" class="form-control" id="txtUserName" @bind-value="_userName" />
+    </div>
+    <div class="form-group">
+        <label for="txtPassword">Password</label>
+        <input type="password" class="form-control" id="txtPassword" @bind-value="_password" />
+    </div>
+    <button type="button" class="btn btn-primary" @onclick="Login">Login</button>
+</form>
+
+@code {
+    private string _userName;
+    private string _password;
+
+    private async Task Login()
+    {
+        var loginRequest = new LoginRequest
+        {
+            UserName = _userName,
+            Password = _password
+        };
+
+        LoginResult loginResult = null;
+        try
+        {
+            var response = await _http.PostAsJsonAsync("Account", loginRequest);
+            loginResult = await response.Content.ReadFromJsonAsync<LoginResult>();
+            if (loginResult.Authenticated)
+            {
+                _navigation.NavigateTo($"/counter");
+            }
+        }
+        catch (Exception ex)
+        {
+        }
+    }
+}

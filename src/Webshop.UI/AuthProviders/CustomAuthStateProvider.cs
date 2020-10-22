@@ -28,18 +28,11 @@ namespace Webshop.UI.AuthProviders
 
         private async Task<ClaimsPrincipal> getUser()
         {
-            var loginRequest = new LoginRequest
-            {
-                UserName = "TestUser",
-                Password = "Pwd12345."
-            };
-
             ApplicationUserModel user = null;
             try
             {
                 _logger.LogInformation("Fetching user details from web api.");
-                var response = await _httpClient.PostAsJsonAsync("Account", loginRequest);
-                user = await response.Content.ReadFromJsonAsync<ApplicationUserModel>();
+                user = await _httpClient.GetFromJsonAsync<ApplicationUserModel>("Account");
             }
             catch (Exception exc)
             {
@@ -48,7 +41,7 @@ namespace Webshop.UI.AuthProviders
 
             if (user == null || !user.IsAuthenticated)
             {
-                return null;
+                return new ClaimsPrincipal(new ClaimsIdentity());
             }
 
             var identity = new ClaimsIdentity(
